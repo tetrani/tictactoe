@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-char num[10] = {'o', '1', '2', '3', '4', '5', '6', '7', '8', '9'}; //initial board
+char num[10] = {'o', '1', '2', '3', '4', '5', '6', '7', '8', '9'}; // Initial board
 
 /*
-    Check if there's a winner, draw, or game is still ongoing:
+    function to check if there's a winner, draw, or game is still ongoing:
     - Return 1 if there's a winner.
     - Return 0 if it's a draw.
-    - Return -1 if game is still ongoing.
+    - Return -1 if the game is still ongoing.
 */
-int win() {
+int win(){
     if (num[1] == num[2] && num[2] == num[3]) return 1;
     if (num[4] == num[5] && num[5] == num[6]) return 1;
     if (num[7] == num[8] && num[8] == num[9]) return 1;
@@ -19,27 +19,28 @@ int win() {
     if (num[3] == num[6] && num[6] == num[9]) return 1;
     if (num[1] == num[5] && num[5] == num[9]) return 1;
     if (num[3] == num[5] && num[5] == num[7]) return 1;
-    //check for draw
-    for (int i = 1; i <= 9; i++) {
-        if (num[i] != 'X' && num[i] != 'O'){
-            return -1; //when game is still ongoing
+
+    //checking for draw
+    for(int i = 1; i <= 9; i++){
+        if (num[i] != 'X' && num[i] != 'O') {
+            return -1; //game is still ongoing
         }
     }
-    return 0; //for a draw
+    return 0; //if it's a draw
 }
 
 /*
-set board position to its initial number but as a character ('1' to '9')
+Function to set board position to its initial number but as a character ('1' to '9')
 '0' + i converts integer i to the corresponding character:
 '0' + 1 = '1', '0' + 2 = '2', ..., '0' + 9 = '9' etc
 */
-void resetBoard(){
+void resetBoard() {
     for (int i = 1; i < 10; i++) {
         num[i] = '0' + i;
     }
 }
 
-/* Display the game board */
+/* Function to display the game board */
 void game() {
     printf("\n\n\tTic Tac Toe\n\n");
     printf("Player 1 (X)  -  Player 2 (O)\n\n");
@@ -54,57 +55,150 @@ void game() {
     printf("     |     |     \n\n");
 }
 
-int main(){
+/* Function to handle the tournament */
+void tournament(int totalGames){
+    int player1Wins = 0, player2Wins = 0, draws = 0;
     int player, choice, result;
-    char mark, playAgain;
-    do{
-        resetBoard(); //start a new board
+    char mark;
+
+    //loop for tournament games depending on number chosen
+    for(int gameNumber = 1; gameNumber <= totalGames; gameNumber++) {
+        resetBoard(); //start a new board for each game
         player = 1;
         result = -1;
 
-        //main game loop
+        //main game loop for the tournament games
         do{
             game();
-            //ternary operators
+            //ternary operators to switch between players
             player = (player % 2)?1:2;
             mark = (player == 1)?'X':'O';
 
             //get valid input from the player
-            int validMove = 0;  //flag to check if a valid move has been made
+            int validMove = 0;  //initilaise flag to check if a valid move has been made
             while(!validMove){
                 printf("Player %d, enter a number (1-9): ", player);
                 if(scanf("%d", &choice) == 1 && choice >= 1 && choice <= 9 && num[choice] == '0' + choice) {
-                    num[choice] = mark; //mark the cell with players symbol x/o
-                    validMove = 1; //set flag to 1 to exit since a valid move waas made
+                    num[choice] = mark; //mark the square with the player's symbol (X/O)
+                    validMove = 1; //set flag to exit loop since a valid move was made
                 }else{
-                    printf("Invalid move. Try again.\n");
-                    while (getchar() != '\n'); //clear input to prevent infinite loop if invalid input was made
+                    printf("Invalid move! Try again. Select an unused square.\n");
+                    while(getchar()!='\n'); //clear input buffer
                 }
             }
-
-            result = win(); //check game status
+            result = win(); //ckheck game status
             player++;
         }while(result==-1);
 
-        game();
-        if(result==1)
+        game(); //dsplay the final board
+        if(result==1){
             printf("==> Player %d wins!\n", --player);
-        else
+            if(player==1) player1Wins++;
+            else player2Wins++;
+        }else{
             printf("==> Game draw\n");
-
-        //ask if the user wants to play again
-        printf("Play again? (y/n): ");
-    do{
-        while(getchar()!='\n'); // clear input buffer
-        playAgain = getchar(); //get users response
-        playAgain = tolower(playAgain); // convert input to lowercase to handle 'Y' or 'N'
-
-        if(playAgain!='y' && playAgain!='n') {
-            printf("Invalid input. Please enter 'y' for yes or 'n' for no: ");
+            draws++;
         }
-    }while(playAgain!='y' && playAgain!='n'); //repeat until valid input
-}while (playAgain == 'y'); //repeat game if 'y'
-    printf("Exiting...Thank you for playing!\n");
-    return 0;
 
+        //prompt user to press entre
+        if(gameNumber < totalGames) {
+            printf("Press Enter to play the next game...");
+            while(getchar()!='\n'); //clear input buffer
+            getchar(); //wait for user to press Enter
+        }
+    }
+
+    // Tournament results!!!:D
+    printf("\nTic Tac Toe Tournament Results!\n");
+    printf("Player 1 (X) Wins: %d\n", player1Wins);
+    printf("Player 2 (O) Wins: %d\n", player2Wins);
+    printf("Draws: %d\n", draws);
+    printf("Congratulations! Thank you for playing! :)\n");
+}
+
+int main(){
+    int totalGames;
+    char gameChoice;
+
+    //ask if the player wants to play a regular game or enter a tournament
+    //loop until a valid input ('t' or 'r') is entered
+    printf("Welcome to Tic Tac Toe!\n");
+    while(1){
+        printf("Would you like to play a regular game (r) or enter a tournament (t)? ");
+        scanf(" %c", &gameChoice);
+        gameChoice = tolower(gameChoice);  //convert keyboard input to lowercase
+
+        if(gameChoice == 't'){
+            //if the user chose 't', start tournament mode
+            printf("Enter the number of games to be played in the tournament: ");
+            while (scanf("%d", &totalGames) != 1 || totalGames <= 0) {
+                while (getchar() != '\n'); //clear input buffer
+                printf("Invalid input! Please enter a positive integer for the number of games: ");
+            }
+            //call the tournament function if user selects ;t'
+            tournament(totalGames);
+            break;  //exit the loop after the tournament
+        } else if(gameChoice == 'r') {
+            //start regular game mode
+            int player, choice, result;
+            char mark, playAgain;
+            do{
+                resetBoard(); //start a new board
+                player = 1;
+                result = -1;
+
+                //main game loop for regular game
+                do{
+                    game();
+                    // Ternary operators to switch between players
+                    player = (player % 2)?1:2;
+                    mark = (player == 1)?'X':'O';
+
+                    //get valid input from the player
+                    int validMove = 0;  //flag to check if a valid move has been made
+                    while(!validMove){
+                        printf("Player %d, enter a number (1-9): ", player);
+                        if(scanf("%d", &choice) == 1 && choice >= 1 && choice <= 9 && num[choice] == '0' + choice) {
+                            num[choice] = mark; //mark the cell with the player's symbol (X/O)
+                            validMove = 1; //set flag to exit loop since a valid move was made
+                        }else{
+                            printf("Invalid move. Try again.\n");
+                            while(getchar() != '\n'); //clear input buffer
+                        }
+                    }
+
+                    result = win(); //check game status
+                    player++;
+                }while(result==-1);
+
+                game(); //display the final board
+                if(result==1) {
+                    printf("==> Player %d wins!\n", --player);
+                }else{
+                    printf("==> Game draw\n");
+                }
+
+                //ask if the user wants to play again
+                printf("Would you like to play again? (y/n): ");
+                do{
+                    while(getchar() != '\n'); // Clear input buffer
+                    playAgain = getchar(); //get user's response
+                    playAgain = tolower(playAgain); //convert input to lowercase
+
+                    if(playAgain!='y' && playAgain!='n'){
+                        printf("Invalid input! Please enter 'y' for yes or 'n' for no: ");
+                    }
+                }while(playAgain!='y' && playAgain!='n'); //repeat until valid input
+
+            }while(playAgain == 'y'); //repeat game if 'y'
+
+            printf("Exiting...Thank you for playing!\n");
+            break;  //exit the loop after finishing regular game
+        }else{
+            //prompt user again
+            printf("Invalid input! Please enter 'r' for a regular game or 't' for a tournament.\n");
+        }
+    }
+
+    return 0;
 }
