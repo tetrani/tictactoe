@@ -1,2 +1,5 @@
 # tictactoe
-tic tac toe for 2nd year c project
+Tic Tac Toe for 2nd Year C Project.
+
+Can play with another player, or battle again an easy mode (so far) CPU.
+May do tournament battles and see who fares better.
