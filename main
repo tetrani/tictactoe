@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <time.h>
 #include <windows.h>
+#include <stdbool.h>
+#include <math.h>
 
 #define RESET   7    // Default color
 #define RED     12   // Red text
@@ -26,62 +28,73 @@ PlayerProfile cpu = {"CPU", 0, 0, 0};  //CPU profile
 char num[17]={'o','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g'}; // Array for 3x3 or 4x4 board
 
 void setColor(int color){
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //gets the handle to the console's output
-    SetConsoleTextAttribute(hConsole, color); //sets the color attribute for the console text
+   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //gets the handle to the console's output
+   SetConsoleTextAttribute(hConsole, color); //sets the color attribute for the console text
 }
 
-void resetBoard(int size){
-    for(int i=1;i<=size * size;i++){
+void resetBoard(int size, char num[]){
+    for(int i=1;i<=size*size;i++){
         if(i<=9) num[i] = '0' + i;
         else num[i] = 'a' + (i - 10);
     }
 }
 
-int win(int size){
-    if(size ==3){
-        if (num[1] == num[2] && num[2] == num[3])  return 1;
-        if (num[4] == num[5] && num[5] == num[6])  return 1;  // Row 2
-        if (num[7] == num[8] && num[8] == num[9])  return 1;  // Row 3
-        if (num[1] == num[4] && num[4] == num[7]) return 1;  // Row 4
+bool isBoardFull(int size, char num[]){
+    for (int i=1;i<=size*size;i++) {
+        if(num[i] != 'X' && num[i] != 'O'){
+            return false; //if there's an empty cell, then board is not full
+        }
+    }
+    return true; //if all cells are filled
+}
+
+
+int win(int size, char num[]) {
+    if (size == 3) {
+        // Check rows
+        if (num[1] == num[2] && num[2] == num[3]) return 1;  // Row 1
+        if (num[4] == num[5] && num[5] == num[6]) return 1;  // Row 2
+        if (num[7] == num[8] && num[8] == num[9]) return 1;  // Row 3
 
         // Check columns
-        if (num[2] == num[5] && num[5] == num[8])  return 1;  // Column 1
-        if (num[3] == num[6] && num[6] == num[9]) return 1;  // Column 2
+        if (num[1] == num[4] && num[4] == num[7]) return 1;  // Column 1
+        if (num[2] == num[5] && num[5] == num[8]) return 1;  // Column 2
+        if (num[3] == num[6] && num[6] == num[9]) return 1;  // Column 3
 
         // Check diagonals
         if (num[1] == num[5] && num[5] == num[9]) return 1;  // Diagonal 1
         if (num[3] == num[5] && num[5] == num[7]) return 1;  // Diagonal 2
     }
-    else if(size==4){
-        if(num[1] == num[2] && num[2] == num[3] && num[3] == num[4]) return 1;
-        if(num[5] == num[6] && num[6] == num[7] && num[7] == num[8]) return 1;  // Row 2
-        if(num[9] == num[10] && num[10] == num[11] && num[11] == num[12]) return 1;  // Row 3
-        if(num[13] == num[14] && num[14] == num[15] && num[15] == num[16]) return 1;  // Row 4
+    else if (size == 4) {
+        // Check rows
+        if (num[1] == num[2] && num[2] == num[3] && num[3] == num[4]) return 1;  // Row 1
+        if (num[5] == num[6] && num[6] == num[7] && num[7] == num[8]) return 1;  // Row 2
+        if (num[9] == num[10] && num[10] == num[11] && num[11] == num[12]) return 1;  // Row 3
+        if (num[13] == num[14] && num[14] == num[15] && num[15] == num[16]) return 1;  // Row 4
 
         // Check columns
-        if(num[1] == num[5] && num[5] == num[9] && num[9] == num[13]) return 1;  // Column 1
-        if(num[2] == num[6] && num[6] == num[10] && num[10] == num[14]) return 1;  // Column 2
-        if(num[3] == num[7] && num[7] == num[11] && num[11] == num[15]) return 1;  // Column 3
-        if(num[4] == num[8] && num[8] == num[12] && num[12] == num[16]) return 1;  // Column 4
+        if (num[1] == num[5] && num[5] == num[9] && num[9] == num[13]) return 1;  // Column 1
+        if (num[2] == num[6] && num[6] == num[10] && num[10] == num[14]) return 1;  // Column 2
+        if (num[3] == num[7] && num[7] == num[11] && num[11] == num[15]) return 1;  // Column 3
+        if (num[4] == num[8] && num[8] == num[12] && num[12] == num[16]) return 1;  // Column 4
 
         // Check diagonals
-        if(num[1] == num[6] && num[6] == num[11] && num[11] == num[16]) return 1;  // Diagonal 1
-        if(num[4] == num[7] && num[7] == num[10] && num[10] == num[13]) return 1;  // Diagonal 2
+        if (num[1] == num[6] && num[6] == num[11] && num[11] == num[16]) return 1;  // Diagonal 1
+        if (num[4] == num[7] && num[7] == num[10] && num[10] == num[13]) return 1;  // Diagonal 2
     }
 
-
+    // Check for ongoing game
     for(int i=1;i<=size*size;i++){
         if(num[i] != 'X' && num[i] != 'O'){
-            return -1; // Game is still ongoing
+            return -1;  // Game is still ongoing
         }
     }
-    return 0; // If it's a draw
+    return 0;  // If it's a draw
 }
 
 void game(int size){
     printf("\n\n\tTic Tac Toe\n\n");
     printf("%s (X)  -  %s (O)\n\n", player1.name, player2.name);
-
     int cellsPerRow = size;           //number of cells per row
     int totalCells = size * size;     //total number of cells
     //top formatting row
@@ -119,8 +132,7 @@ void game(int size){
             printf("\n");
         }
     }
-
-    // Final row formatting (make sure there are 3 | after each cell)
+    //final row formatting (make sure there are 3 | after each cell)
     printf("\n     ");
     for (int i = 0; i < cellsPerRow; i++) {
         printf("|     ");
@@ -128,75 +140,189 @@ void game(int size){
     printf("\n\n");
 }
 
-
-int easyAI(){
+//function for random cell selection move by CPU
+int easyAI(int size, char num[]){
     int moveChoice;
+    int totalCells = size*size; //calculate total cells based on the board size
     do{
-        moveChoice = rand()%9+1; //random move from CPU
+        moveChoice = rand()%totalCells + 1; //random move from CPU within valid range
     }while(num[moveChoice] == 'X' || num[moveChoice] == 'O'); //make sure choice is valid
    return moveChoice;
 }
 
-//Function to play a single game of Tic Tac Toe
-// Function to play a single game of Tic Tac Toe
-void playGame(int againstCPU, int size){
+//function for medium CPU difficulty, tries to block player from winning but doesn't implement a set strategy
+int mediumAI(int size, char num[]){
+    //calculate board size
+    int totalCells = size*size;
+    //check if cell is empty
+    for(int i=1;i<=totalCells;i++){
+        if(num[i] != 'X' && num[i] != 'O'){
+            //save choice to temp variable
+            char temp = num[i];
+            //check if placing results in a win
+            num[i] = 'O';
+            if(win(size, num)==1){
+                num[i] = temp; //reset the cell after testing
+                //return index of winning cpu move
+                return i;
+            }
+            num[i] = 'X';
+            if (win(size, num)==1){
+                num[i] = temp; //reset the cell after testing
+                //return index of move that blocks player
+                return i;
+            }
+            num[i] = temp; //reset the cell
+        }
+    }
+    //if no critical move can be found, return to easyAI
+    return easyAI(size, num);
+}
+
+int minimax(char board[], int size, int depth, bool isAI){
+    //base case: if depth exceeded then return neutral 0 score
+    if(depth >= 6){  //depth limit for 4x4 grids (to prevent recursion
+        return 0;  //return neutral score if depth exceeded
+    }//check if theres a winner and return score
+    int score = win(size, board);
+    //if CPU wins, return a negative score that increases with depth (to minimize CPUs winning move)
+    //if Player wins, return a positive score that increases with depth
+    if(score == 1) return isAI ? -10 + depth : 10 - depth;
+    if(isBoardFull(size, board)) return 0;
+    //if is ai turn then maximise ai score
+    if(isAI){
+        //initialise low score to maximise
+        int bestScore = -1000;
+    //check if cell is empty
+        for(int i=1;i<= size*size;i++){
+            if(board[i] != 'X' && board[i] != 'O'){
+                //save board state to temp and undo move if better move found
+                char temp = board[i];
+                board[i] = 'O';
+                int currentScore = minimax(board, size, depth + 1, false);
+                board[i] = temp;
+                bestScore = fmax(bestScore, currentScore);
+            }
+        }
+        return bestScore;
+    //simulate player move
+    }else{
+        //start with high score to minimise
+        int bestScore = 1000;
+        for(int i=1;i<=size*size;i++){
+         //run through like CPU but pretending to be human player and check best moves
+            if(board[i] != 'X' && board[i] != 'O'){
+                char temp = board[i];
+                board[i] = 'X';
+                int currentScore = minimax(board, size, depth + 1, true);
+                board[i] = temp;
+                bestScore = fmin(bestScore, currentScore);
+            }
+        }
+        return bestScore;
+    }
+}
+
+int hardAI(int size, char board[]){
+    //initialise bestScore to a low number and bestMove to -1
+    int bestScore = -1000, bestMove = -1;
+     //loop through all positions on the board to check for possible moves
+    for(int i=1;i<=size*size;i++){
+        //make sure current position is empty
+        if(board[i] != 'X' && board[i] != 'O'){
+            //save the current board at position i (to undo later)
+            char temp = board[i];
+            board[i] = 'O';  //CPU move
+            //call minimax function to check the score of the current move
+            int score = minimax(board, size, 0, false);
+            board[i] = temp;  //undo move by restoring original board
+            //if minimax score is greater than bestscore then update/swap
+            if(score > bestScore){
+                bestScore = score;
+                bestMove = i;
+            }
+        }
+    }
+    if(bestMove == -1){  //fallback f no valid move found
+        //then start to check for any position and select first available cell
+        for(int i=1;i<=size*size;i++){
+            if(board[i] != 'X' && board[i] != 'O'){
+                bestMove = i;
+                break;
+            }
+        }
+    }
+    return bestMove;
+}
+
+//Function to play a single game of Tic-Tac-Toe
+void playGame(int againstCPU, int size, int difficulty){
     int player = 1, choice, result = -1;
     char mark;
     char input[2];  //store the user input as a string
-    resetBoard(size);  //start with a fresh board
-
+    resetBoard(size, num);  //start with a fresh board
     do{
         game(size);  //display the board
-
-        if(player==2 && againstCPU){  // CPU's turn
+        if(player == 2 && againstCPU){  //CPU's turn
             printf("%s is thinking...\n", cpu.name);
-            Sleep(1000);  //sleep for 1 second so it looks like CPU is thinking :P
-            choice = easyAI(size);  //aall the easyAI function to make a move
+            Sleep(1000);  //sleep for 1 second to make it look like CPU is thinking :P
+            //Choose AI function based on difficulty
+            switch(difficulty){
+                case 1: //easy mode (random)
+                    choice = easyAI(size, num);
+                    break;
+                case 2: //medium mode (tries to block)
+                    choice = mediumAI(size, num);
+                    break;
+                case 3: //hard mode (minimax algo)
+                    choice = hardAI(size, num);
+                    break;
+                default:
+                    printf("Invalid difficulty level. Defaulting to Easy.\n");
+                    choice = easyAI(size, num);
+            }
             mark = 'O';  //CPU always plays 'O'
         }else{  //player's turn
             //get valid input from the player
-            printf("%s, enter a move: ", (player==1)?player1.name:player2.name);
-            scanf("%s", input);  // Read the input
-
+            printf("%s, enter a move: ", (player == 1) ? player1.name : player2.name);
+            scanf("%s", input);  //read the input
             //handle numeric input (1-9 for 3x3 board or 1-9 for 4x4)
             if(size == 3 && isdigit(input[0])){
-                choice = input[0] - '0';  //Convert '1' to 1, '2' to 2, etc.
+                choice = input[0] - '0';  // Convert '1' to 1, '2' to 2, etc.
             }
-            //handle alphabetic input (a-g for 4x4 board)
-            else if (size == 4 && (isdigit(input[0]) || isalpha(input[0]))) {
+            //Handle alphabetic input (a-g for 4x4 board)
+            else if(size == 4 && (isdigit(input[0]) || isalpha(input[0]))){
                 if(isdigit(input[0])){
-                    //For numeric inputs 1-9
+                    // For numeric inputs 1-9
                     choice = input[0] - '0';
-                }else if(isalpha(input[0])) {
-                    //for alphabetic inputs a-g (10-16)
+                } else if(isalpha(input[0])) {
+                    // For alphabetic inputs a-g (10-16)
                     choice = input[0] - 'a' + 10;
                 }
             }else{
                 printf("Invalid move! Try again.\n");
                 continue;
             }
-            //check if the selected cell is available
+            // Check if the selected cell is available
             if(num[choice] == 'X' || num[choice] == 'O'){
                 printf("Invalid move! Cell is already taken. Please try again.\n");
                 continue;
             }
             //assign the mark based on the player
-            mark = (player==1)?'X':'O';  // Player 1 is 'X', Player 2/CPU is 'O'
+            mark = (player == 1) ? 'X' : 'O';  //player 1 is 'X', Player 2/CPU is 'O'
         }
         num[choice] = mark;  //place mark on the board
-        result = win(size);  //check game status
+        result = win(size, num);  //check game status
         player = (player % 2) + 1;  //switch to the next player
     }while(result == -1);
-
-    game(size);  // Display the final board
-
+    game(size);  //display the final board
     //handle game result
-    if(result==1){
+    if(result == 1){
         //adjust for last increment
         player = (player%2) + 1;
-        printf("==> %s wins!\n", (player==1)?player1.name:(againstCPU?cpu.name:player2.name));
-
-        if(player==1){
+        printf("==> %s wins!\n", (player == 1) ? player1.name : (againstCPU ? cpu.name : player2.name));
+        //add wins/losses
+        if(player == 1){
             player1.wins++;
             if(againstCPU)
                 cpu.losses++;
@@ -211,7 +337,7 @@ void playGame(int againstCPU, int size){
                 player1.losses++;
             }
         }
-    }else{
+    }else{//add draws
         printf("==> Game draw!\n");
         player1.draws++;
         if(againstCPU)
@@ -219,8 +345,7 @@ void playGame(int againstCPU, int size){
         else
             player2.draws++;
     }
-
-    // Display game results
+    //Display game results so far
     if(againstCPU){
         printf("%s - Wins: %d, Losses: %d, Draws: %d\n", player1.name, player1.wins, player1.losses, player1.draws);
         printf("%s - Wins: %d, Losses: %d, Draws: %d\n", cpu.name, cpu.wins, cpu.losses, cpu.draws);
@@ -230,23 +355,18 @@ void playGame(int againstCPU, int size){
     }
 }
 
-
-
-
 //Function to handle the tournament option
-void tournament(int totalGames, int againstCPU, int size) {
+void tournament(int totalGames, int againstCPU, int size, int difficulty){
     printf("\nTournament Mode: %d games will be played.\n", totalGames);
-
-    for(int gameNumber=1;gameNumber<=totalGames;gameNumber++) {
+    //loop through amount of games specified by user
+    for(int gameNumber=1;gameNumber<=totalGames;gameNumber++){
         printf("\nGame %d:\n", gameNumber);
-        playGame(againstCPU, size);  //play a game with CPU or human opponent
-
+        playGame(againstCPU, size, difficulty);  //play a game with CPU or human opponent
         if(gameNumber<totalGames){
             printf("Loading next game...\n");
             Sleep(1000);
         }
     }
-
     //Display final tournament results
     printf("\nTournament Results:\n");
     if(againstCPU){
@@ -295,6 +415,7 @@ void saveProfiles(){
 int promptBoardSize(){
     int size;
     while(1){
+            //get user input for board size
         printf("Choose board size (3 for 3x3, 4 for 4x4): ");
         if(scanf("%d", &size) != 1 || (size != 3 && size != 4)){
             while (getchar() != '\n'); // Clear buffer
@@ -305,106 +426,139 @@ int promptBoardSize(){
     }
 }
 
-//Main function
-int main(){
-    loadProfiles();
-    //ASCII art :-)
-        printf("  _______ _          _______             _______\n");
-        printf(" |__   __(_)        |__   __|           |__   __|\n");
-        printf("    | |   _  ___ ______| | __ _  ___ ______| | ___   ___\n");
-        printf("    | |  | |/ __|______| |/ _` |/ __|______| |/ _ \\ / _ \\\n");
-        printf("    | |  | | (__       | | (_| | (__       | | (_) |  __/\n");
-        printf("    |_|  |_|\\___|      |_|\\__,_|\\___|      |_|\\___/ \\___|\n");
-        printf("\nWelcome back to Tic-Tac-Toe, %s!\n", player1.name);
-    // Random seed for AI easy mode
-    srand(time(NULL));
-    int size = promptBoardSize();  // Ask for board size
-    char gameChoice, opponentChoice;
-    int againstCPU = 0;
+//function to print ASCII banner :-)
+void printBanner(){
+    printf("  _______ _          _______             _______\n");
+    printf(" |__   __(_)        |__   __|           |__   __|\n");
+    printf("    | |   _  ___ ______| | __ _  ___ ______| | ___   ___\n");
+    printf("    | |  | |/ __|______| |/ _` |/ __|______| |/ _ \\ / _ \\\n");
+    printf("    | |  | | (__       | | (_| | (__       | | (_) |  __/\n");
+    printf("    |_|  |_|\\___|      |_|\\__,_|\\___|      |_|\\___/ \\___|\n");
+    printf("\nWelcome to Tic-Tac-Toe, %s!\n", player1.name);
+}
 
-    //load player profiles from the .dat file (if available)
 
-    //Ask for Player 1's name if not loaded from the file
+//function to set up player profiles if there's no player already found
+void setupPlayerProfiles(){
     if(player1.wins == 0 && player1.losses == 0 && player1.draws == 0){
         printf("Enter Player 1's name: ");
-        scanf(" %s", player1.name);  // Read Player 1's name
+        scanf(" %s", player1.name);
     }
+}
+
+//function to choose the game mode, pvp/ai
+char chooseGameMode(){
+    char opponentChoice;
+    printf("\nPlay mode:\n");
+    printf("(p) player vs player\n");
+    printf("(a) AI mode\n");
+    printf("(x) to Exit\n");
+    printf("Choice: ");
+    scanf(" %c", &opponentChoice);
+    return tolower(opponentChoice);  //convert input to lowercase
+}
+
+//function to set up Player 2 or CPU
+int setupOpponent(){
+    char opponentChoice = chooseGameMode();
+    int difficulty = 0;
+    if(opponentChoice == 'p'){
+        if(strcmp(player2.name, "CPU") == 0){
+            printf("Enter Player 2's name: ");
+            scanf(" %s", player2.name);
+        }
+        return 0;  //against another player
+    }else if(opponentChoice == 'a'){
+        printf("\nSelect difficulty:\n");
+        printf("1. Easy\n");
+        printf("2. Medium\n");
+        printf("3. Hard\n");
+        printf("Choice: ");
+        while (scanf("%d", &difficulty) != 1 || (difficulty < 1 || difficulty > 3)) {
+            while (getchar() != '\n');  // Clear input buffer
+            printf("Invalid input! Please choose a number between 1 and 3: ");
+        }//if p2 is cpu then rename
+        strcpy(player2.name, "CPU");
+        return difficulty;
+        //if exiting then save profiles
+    }else if(opponentChoice == 'x'){
+        printf("Exiting the game. Saving profiles, please wait...\n");
+        Sleep(1000);
+        saveProfiles();
+        printf("Profiles saved! Exiting...");
+        return -1;
+    }else{
+        printf("Invalid choice! Please try again.\n");
+        return setupOpponent();  //retry
+    }
+}
+
+/*Main game loop
+prints out the choices available to user in the main menu and takes in user input for those choices*/
+void gameLoop(){
+    int size = promptBoardSize();  //get board size
     while(1){
-        printf("\nPlay mode:\n");
-        printf("(p) play against another player\n");
-        printf("(a) play the computer AI\n");
-        printf("(x) to Exit\n");
-        printf("Choice: ");
-        scanf(" %c", &opponentChoice);
-        opponentChoice = tolower(opponentChoice);  //convert input to lowercase
-
-        if(opponentChoice == 'p'){
-            againstCPU = 0;  //human opponent
-             if (strcmp(player2.name, "CPU") == 0) {  // Check if Player 2 was previously set to "CPU"
-                printf("Enter Player 2's name: ");
-                scanf(" %s", player2.name);   // Reset Player 2's name to default
+        int difficulty = setupOpponent();  //choose opponent type and get difficulty if cpu
+        if(difficulty == -1){
+            //exit
+            break;
         }
-            if(player2.wins == 0 && player2.losses == 0 && player2.draws == 0){
-                printf("Enter Player 2's name: ");
-                scanf(" %s", player2.name);  //read Player 2's name
-            }else{
-                printf("You are playing against %s! Good luck!\n", player2.name);
-            }
-        }else if(opponentChoice == 'a'){
-            againstCPU = 1;  //AI opponent
-            strcpy(player2.name, "CPU");  //set Player 2's name to CPU
-        }else if(opponentChoice == 'x'){
-            printf("\nSaving player profiles, please wait...\n");
-            Sleep(1000);
-            printf("Saved!\n\n");
-            printf("Exiting...thank you for playing!\n");
-            saveProfiles();  //save profiles before exiting
-            return 0;
-        }else{
-            printf("Invalid choice! Please enter (p) for player, (a) for AI, or (x) to exit.\n");
-            continue;
-        }
-
-        //main game menu
-        printf("\nGame mode:\n");
-        printf("(r) regular single game\n");
-        printf("(t) tournament mode\n");
-        printf("(x) to Exit\n");
+        int againstCPU = (difficulty > 0);  //if difficulty > 0, it's a CPU opponent
+        printf("\nDo you want to:\n");
+        printf("(r) play a regular game\n");
+        printf("(t) play a tournament\n");
+        printf("(x) Exit\n");
         printf("Choice: ");
+        char gameChoice;
         scanf(" %c", &gameChoice);
-        gameChoice = tolower(gameChoice);
-
-        if(gameChoice == 'r'){
-            char playAgain;
-            do{
-                playGame(againstCPU, size);  //play a single game
+        //checking game choice and conditions
+        if(tolower(gameChoice) == 'r'){
+            char playAgain = 'y';
+            while(playAgain == 'y'){
+                playGame(againstCPU, size, difficulty);  //play a single game
                 printf("Would you like to play again? (y/n): ");
-                while((playAgain = getchar()) == '\n');  //read valid input
+                while(getchar() != '\n');  //clear input buffer
+                playAgain = getchar();
                 playAgain = tolower(playAgain);
-            }while(playAgain == 'y');
+                if(playAgain != 'y' && playAgain != 'n'){
+                    printf("Invalid choice! Please enter 'y' or 'n': ");
+                }
+            }
             printf("\nExiting regular game mode...\n");
-        //tournament function xcalled
-        }else if(gameChoice == 't'){
+        }else if(tolower(gameChoice) == 't'){
             int totalGames;
             printf("Enter the number of games for the tournament: ");
-            while(scanf("%d", &totalGames) != 1 || totalGames <= 0) {
-                while(getchar() != '\n');  // Clear input buffer
-                printf("Invalid input! Enter a positive number: ");
+            while(scanf("%d", &totalGames) != 1 || totalGames <= 0){
+                while (getchar() != '\n');  // Clear input buffer
+                printf("Invalid input! Please enter a positive integer: ");
             }
-            tournament(totalGames, againstCPU, size);  // Start tournament mode
-         //x exits the game
-        }else if(gameChoice == 'x'){
-            printf("Saving player profiles, please wait...\n");
-            Sleep(1000);
-            printf("Saved!\n\n");
-            printf("Exiting...thank you for playing!\n");
-            saveProfiles();  //Save profiles before exiting
-            return 0;
-        //check for invalid input
+            tournament(totalGames, againstCPU, size, difficulty);  //play a tournament
+        }else if(tolower(gameChoice) == 'x'){
+            printf("Exiting...\n");
         }else{
-            printf("Invalid choice! Please enter (r) for regular game, (t) for tournament, or (x) to exit.\n");
+            printf("Invalid choice!\n");
+        }
+        printf("\nReturn to main menu? (y/n): ");
+        char playAgain;
+        while(getchar() != '\n');  //clear input buffer
+        playAgain = getchar();
+        playAgain = tolower(playAgain);
+        if(playAgain != 'y'){
+            printf("Thanks for playing! Saving profiles...\n");
+            saveProfiles();
+            Sleep(1000);
+            printf("Profiles saved! Exiting...\n");
+            break;  //exit the game loop
         }
     }
+}
 
+//main function using modular programming syntax
+int main(){
+    srand(time(NULL));  //seed for random number generation
+    loadProfiles();
+    printBanner();
+    setupPlayerProfiles();
+    gameLoop();  //start the game loop
     return 0;
 }
