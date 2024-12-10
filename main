@@ -1,3 +1,28 @@
+/*
+    ==============================================================
+                            Tic-Tac-Toe Game
+    ==============================================================
+
+    Created by: Tara Doyle-Nolan, Nour Kadour
+    Student ID's: c00213555, c00300101
+    Date (last updated): 10/12/2024
+
+    Description:
+    - This program implements a Tic-Tac-Toe game where a player can play against either another player or an AI.
+    - The AI offers different levels of difficulty: Easy, Medium, and Hard.
+    - Implements a Minimax algorithm for competitiveness.
+    - The board size is adjustable (currently supports 3x3 and 4x4 grids).
+    - The game tracks wins, losses, and draws for both players and the AI.
+
+    Features:
+    - Play against another player or the AI.
+    - AI with different difficulty levels (Easy, Medium, Hard).
+    - Displays the game board after each move.
+    - Saves player profiles.
+    - Tracks and displays win/loss/draw statistics for both players.
+
+    ==============================================================
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
